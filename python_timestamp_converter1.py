@@ -19,42 +19,41 @@ except ValueError:
 
 out_file = open(args.output_file, 'w')
 
-archive = f.read()
 
-keywords = ["start\": ","end\": ","timestamp\":"]
-keyword_ind = 0
+
+keyword_list = ["start\": ","end\": ","timestamp\":"]
 current_index = 0
-
+final_output = ""
         
 while (True):
-
-        current_index=archive.find(keywords[keyword_ind],current_index,"\n")
-        
-        if (current_index >= 0):
-                timestamp_end = archive.find("\n",current_index+3)
-                unix_timestamp = archive[current_index+len(keywords[keyword_ind]):timestamp_end-1]
-                unix_timestamp = unix_timestamp.replace(',','')
-
-                try:
-                        junk = int(unix_timestamp)
-                except ValueError:
-                        current_index = timestamp_end
-                        continue
-                
-                new_timestamp = datetime.datetime.fromtimestamp(int(unix_timestamp)/1000).strftime('%Y-%m-%d %H:%M:%S')
-                archive = archive.replace(unix_timestamp,new_timestamp,1)
-                current_index = timestamp_end
-
-                if (keyword_ind < len(keywords)-1):
-                        keyword_ind += 1
-                else:
-                        keyword_ind = 0
-                
-        else:
+        archive = f.readline()
+        if (archive == ""):
                 break
-        
 
-out_file.write(archive) 
-print(archive)
-			
+        for keyword in keyword_list:
+                
+                current_index=archive.find(keyword)
+                
+                if (current_index >= 0):
+                        
+                        unix_timestamp = archive[current_index+len(keyword):len(archive)-2]
+                        unix_timestamp = unix_timestamp.replace(',','')
+
+                        try:
+                                junk = int(unix_timestamp)
+                        except ValueError:
+                                continue
+                
+                        new_timestamp = datetime.datetime.fromtimestamp(int(unix_timestamp)/1000).strftime('%Y-%m-%d %H:%M:%S')
+                        archive = archive.replace(unix_timestamp,new_timestamp,1)
+                        
+                
+                else:
+                        continue
+
+        final_output = final_output + archive
+  
+        
+#print(final_output)
+out_file.write(final_output)			
 			
